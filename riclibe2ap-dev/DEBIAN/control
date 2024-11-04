@@ -1,0 +1,9 @@
+Package: riclibe2ap-dev
+Version: 2.0
+Section: libdevel
+Priority: optional
+Architecture: amd64
+Depends: riclibe2ap (= 2.0)
+Maintainer: Angelo Feraudo aferaudo34@gmail.com
+Description: E2AP development files
+ This package contains the headers and development files for E2AP.

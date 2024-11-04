@@ -1,0 +1,8 @@
+Package: riclibe2ap
+Version: 2.0
+Section: libs
+Priority: optional
+Architecture: amd64
+Maintainer: Angelo Feraudo aferaudo34@gmail.com
+Description: E2AP shared library
+    This package contains the E2AP library for general use.
