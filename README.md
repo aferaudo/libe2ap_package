@@ -18,3 +18,9 @@ cp e2apsource/headers/ riclibe2ap-dev/usr/local/include/riclibe2ap
 ```
 
 Remember to change the version in `DEBIAN/control` file accordingly.
+
+Create `.deb` software package
+```bash
+dpkg-deb --build riclibe2ap
+dpkg-deb --build riclibe2ap-dev
+```
