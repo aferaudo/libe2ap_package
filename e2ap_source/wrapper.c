@@ -954,7 +954,7 @@ void e2ap_free_decoded_ric_control_failure(RICControlFailure* msg) {
 }
 
 ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, long ricRequestorID, long ricRequestSequenceNumber,
-                  long ranFunctionID, void *ricControlHdr, size_t ricControlHdrSize, void *ricControlMsg, size_t ricControlMsgSize)
+                  long ranFunctionID, void *callProcessId, size_t callProcessIdSize, void *ricControlHdr, size_t ricControlHdrSize, void *ricControlMsg, size_t ricControlMsgSize, long controlAckRequest)
 {
 
     E2AP_PDU_t *init = (E2AP_PDU_t *)calloc(1, sizeof(E2AP_PDU_t));
@@ -1033,6 +1033,13 @@ ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, l
 
     memcpy(controlHdr->buf, ricControlHdr, ricControlHdrSize);
     controlHdr->size = ricControlHdrSize;
+    printf("Control header size: %d\n", controlHdr->size);
+    int i = 0;
+    for(i = 0; i < ricControlHdrSize; i++)
+    {
+        printf("%d", controlHdr->buf);
+    }
+    printf("\n");
     ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, controlReqHdr);
 
     //Ric Control Message
