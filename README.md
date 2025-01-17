@@ -14,7 +14,7 @@ cp e2ap_source/output/libriclibe2ap.so riclibe2ap/usr/local/lib/
 cp e2ap_source/output/libriclibe2ap.a riclibe2ap-dev/usr/local/lib
 
 # Copying headers
-cp e2ap_source/headers/ riclibe2ap-dev/usr/local/include/riclibe2ap
+cp -r e2ap_source/headers/ riclibe2ap-dev/usr/local/include/riclibe2ap
 ```
 
 Remember to change the version in `DEBIAN/control` file accordingly.
