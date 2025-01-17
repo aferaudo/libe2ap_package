@@ -1017,34 +1017,34 @@ ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, l
     ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_ranfunc);
 
     // RICcallProcessID
-    if (callProcessIDBuffer != NULL)
-    {
-        RICcontrolRequest_IEs_t *ies_callproc = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
-        if (!ies_callproc)
-        {
-            fprintf(stderr, "alloc RICcallProcessID failed\n");
-            ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
-            return -1;
-        }
+    // if (callProcessIDBuffer != NULL)
+    // {
+    //     RICcontrolRequest_IEs_t *ies_callproc = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
+    //     if (!ies_callproc)
+    //     {
+    //         fprintf(stderr, "alloc RICcallProcessID failed\n");
+    //         ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
+    //         return -1;
+    //     }
 
-        ies_callproc->criticality = Criticality_reject;
-        ies_callproc->id = ProtocolIE_ID_id_RICcallProcessID;
-        ies_callproc->value.present = RICcontrolRequest_IEs__value_PR_RICcallProcessID;
-        RICcallProcessID_t *riccallprocess_ie = &ies_callproc->value.choice.RICcallProcessID;
+    //     ies_callproc->criticality = Criticality_reject;
+    //     ies_callproc->id = ProtocolIE_ID_id_RICcallProcessID;
+    //     ies_callproc->value.present = RICcontrolRequest_IEs__value_PR_RICcallProcessID;
+    //     RICcallProcessID_t *riccallprocess_ie = &ies_callproc->value.choice.RICcallProcessID;
 
-        riccallprocess_ie->buf = (uint8_t *)calloc(1, callProcessIDSize);
-        if (!riccallprocess_ie->buf)
-        {
-            fprintf(stderr, "alloc RICcallProcessID buf failed\n");
-            ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
-            return -1;
-        }
+    //     riccallprocess_ie->buf = (uint8_t *)calloc(1, callProcessIDSize);
+    //     if (!riccallprocess_ie->buf)
+    //     {
+    //         fprintf(stderr, "alloc RICcallProcessID buf failed\n");
+    //         ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
+    //         return -1;
+    //     }
 
-        memcpy(riccallprocess_ie->buf, callProcessIDBuffer, callProcessIDSize);
-        riccallprocess_ie->size = callProcessIDSize;
+    //     memcpy(riccallprocess_ie->buf, callProcessIDBuffer, callProcessIDSize);
+    //     riccallprocess_ie->size = callProcessIDSize;
 
-        ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_callproc);
-    }
+    //     ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_callproc);
+    // }
 
     // RICcontrolHeader
     RICcontrolRequest_IEs_t *ies_ctlheader = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
@@ -1118,6 +1118,11 @@ ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, l
         *ricctlackreq_ie = controlAckRequest;
         ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_ctlackreq);
     }
+
+    fprintf(stderr, "showing xer of asn_DEF_E2AP_PDU data\n");
+    xer_fprint(stderr, &asn_DEF_E2AP_PDU, init);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "After xer of asn_DEF_E2AP_PDU data\n");
 
     return encode_E2AP_PDU(init, buffer, buf_size);
 }
