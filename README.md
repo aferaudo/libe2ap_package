@@ -10,11 +10,11 @@ Go in the `e2ap_source` package and run
 
 Copy the `libriclibe2ap.so` and `libriclibe2ap.a` files in the directories `riclibe2ap/usr/local/lib` and `riclibe2ap-dev/usr/local/lib` respectively. In the last case you need to copy also headers.
 ```bash
-cp e2apsource/output/libriclibe2ap.so riclibe2ap/usr/local/lib/
-cp e2apsource/output/libriclibe2ap.a riclibe2ap-dev/usr/local/lib
+cp e2ap_source/output/libriclibe2ap.so riclibe2ap/usr/local/lib/
+cp e2ap_source/output/libriclibe2ap.a riclibe2ap-dev/usr/local/lib
 
 # Copying headers
-cp e2apsource/headers/ riclibe2ap-dev/usr/local/include/riclibe2ap
+cp e2ap_source/headers/ riclibe2ap-dev/usr/local/include/riclibe2ap
 ```
 
 Remember to change the version in `DEBIAN/control` file accordingly.

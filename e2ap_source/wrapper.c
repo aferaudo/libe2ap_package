@@ -953,25 +953,31 @@ void e2ap_free_decoded_ric_control_failure(RICControlFailure* msg) {
     msg = NULL;
 }
 
-ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, long ricRequestorID, long ricRequestSequenceNumber,
-                  long ranFunctionID, void *ricControlHdr, size_t ricControlHdrSize, void *ricControlMsg, size_t ricControlMsgSize)
-{
 
+ssize_t e2ap_encode_ric_control_request_message(
+    void *buffer, size_t buf_size,
+    long ricRequestorID,
+    long ricRequestSequenceNumber,
+    long ranFunctionID,
+    void *ricCallProcessID, size_t ricCallProcessIDSize,
+    void *ricControlHdr, size_t ricControlHdrSize,
+    void *ricControlMsg, size_t ricControlMsgSize,
+    long ricControlAckRequest)
+{
     E2AP_PDU_t *init = (E2AP_PDU_t *)calloc(1, sizeof(E2AP_PDU_t));
-    if(!init) {
+    if (!init) {
         fprintf(stderr, "alloc E2AP_PDU failed\n");
         return -1;
     }
 
-
     InitiatingMessage_t *initiatingMsg = (InitiatingMessage_t *)calloc(1, sizeof(InitiatingMessage_t));
-    if(!initiatingMsg) {
+    if (!initiatingMsg) {
         fprintf(stderr, "alloc InitiatingMessage failed\n");
         ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
         return -1;
     }
 
-        init->choice.initiatingMessage = initiatingMsg;
+    init->choice.initiatingMessage = initiatingMsg;
     init->present = E2AP_PDU_PR_initiatingMessage;
 
     initiatingMsg->procedureCode = ProcedureCode_id_RICcontrol;
@@ -980,87 +986,127 @@ ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, l
 
     RICcontrolRequest_t *control_request = &initiatingMsg->value.choice.RICcontrolRequest;
 
-
-    //RICrequestID
-    RICcontrolRequest_IEs_t *controlReqID = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
-    if(!controlReqID) {
-        fprintf(stderr, "alloc RICrequestID failed\n");
+    /* ============================================================
+     * IE 1: id-RICrequestID (29) — MANDATORY
+     * ============================================================ */
+    RICcontrolRequest_IEs_t *ies_reqID = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
+    if (!ies_reqID) {
+        fprintf(stderr, "alloc RICrequestID IE failed\n");
         ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
         return -1;
     }
+    ies_reqID->criticality = Criticality_reject;
+    ies_reqID->id = ProtocolIE_ID_id_RICrequestID;
+    ies_reqID->value.present = RICcontrolRequest_IEs__value_PR_RICrequestID;
+    ies_reqID->value.choice.RICrequestID.ricRequestorID = ricRequestorID;
+    ies_reqID->value.choice.RICrequestID.ricInstanceID = ricRequestSequenceNumber;
+    ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_reqID);
 
-    controlReqID->criticality = Criticality_reject;
-    controlReqID->id = ProtocolIE_ID_id_RICrequestID;
-
-    controlReqID->value.present = RICcontrolRequest_IEs__value_PR_RICrequestID;
-    RICrequestID_t *ricrequest_ie = &controlReqID->value.choice.RICrequestID;
-    ricrequest_ie->ricRequestorID = ricRequestorID;
-    ricrequest_ie->ricInstanceID = ricRequestSequenceNumber;
-    ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, controlReqID);
-
-    //RICfunctionID
-    RICcontrolRequest_IEs_t *controlReqFunID = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
-    if(!controlReqFunID) {
-        fprintf(stderr, "alloc RICrequestID failed\n");
+    /* ============================================================
+     * IE 2: id-RANfunctionID (5) — MANDATORY
+     * ============================================================ */
+    RICcontrolRequest_IEs_t *ies_ranfunc = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
+    if (!ies_ranfunc) {
+        fprintf(stderr, "alloc RANfunctionID IE failed\n");
         ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
         return -1;
     }
+    ies_ranfunc->criticality = Criticality_reject;
+    ies_ranfunc->id = ProtocolIE_ID_id_RANfunctionID;
+    ies_ranfunc->value.present = RICcontrolRequest_IEs__value_PR_RANfunctionID;
+    ies_ranfunc->value.choice.RANfunctionID = ranFunctionID;
+    ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_ranfunc);
 
-    controlReqFunID->criticality = Criticality_reject;
-    controlReqFunID->id = ProtocolIE_ID_id_RANfunctionID;
-    controlReqFunID->value.present = RICcontrolRequest_IEs__value_PR_RANfunctionID;
-    RANfunctionID_t *ranfunction_ie = &controlReqFunID->value.choice.RANfunctionID;
-    *ranfunction_ie = ranFunctionID;
-    ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, controlReqFunID);
+    /* ============================================================
+     * IE 3: id-RICcallProcessID (20) — OPTIONAL
+     * ============================================================ */
+    if (ricCallProcessID != NULL && ricCallProcessIDSize > 0) {
+        RICcontrolRequest_IEs_t *ies_callproc = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
+        if (!ies_callproc) {
+            fprintf(stderr, "alloc RICcallProcessID IE failed\n");
+            ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
+            return -1;
+        }
+        ies_callproc->criticality = Criticality_reject;
+        ies_callproc->id = ProtocolIE_ID_id_RICcallProcessID;
+        ies_callproc->value.present = RICcontrolRequest_IEs__value_PR_RICcallProcessID;
+        RICcallProcessID_t *callProcID = &ies_callproc->value.choice.RICcallProcessID;
+        callProcID->buf = (uint8_t *)calloc(1, ricCallProcessIDSize);
+        if (!callProcID->buf) {
+            fprintf(stderr, "alloc RICcallProcessID buf failed\n");
+            free(ies_callproc);
+            ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
+            return -1;
+        }
+        memcpy(callProcID->buf, ricCallProcessID, ricCallProcessIDSize);
+        callProcID->size = ricCallProcessIDSize;
+        ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_callproc);
+    }
 
-    // RICControlHdr
-    RICcontrolRequest_IEs_t *controlReqHdr = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
-    if(!controlReqHdr) {
-        fprintf(stderr, "alloc RICcontrolRequest_IEs_t failed\n");
+    /* ============================================================
+     * IE 4: id-RICcontrolHeader (22) — MANDATORY
+     * ============================================================ */
+    RICcontrolRequest_IEs_t *ies_ctrlhdr = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
+    if (!ies_ctrlhdr) {
+        fprintf(stderr, "alloc RICcontrolHeader IE failed\n");
         ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
         return -1;
     }
-    controlReqHdr->criticality = Criticality_reject;
-    controlReqHdr->id = ProtocolIE_ID_id_RICcontrolHeader;
-    controlReqHdr->value.present = RICcontrolRequest_IEs__value_PR_RICcontrolHeader;
-    RICcontrolHeader_t *controlHdr = &controlReqHdr->value.choice.RICcontrolHeader;
-    controlHdr->buf = (uint8_t *)calloc(1, ricControlHdrSize);
-    if(!controlHdr->buf) {
-        fprintf(stderr, "alloc RICcontrolHeader_t buf failed\n");
+    ies_ctrlhdr->criticality = Criticality_reject;
+    ies_ctrlhdr->id = ProtocolIE_ID_id_RICcontrolHeader;
+    ies_ctrlhdr->value.present = RICcontrolRequest_IEs__value_PR_RICcontrolHeader;
+    RICcontrolHeader_t *ctrlHdr = &ies_ctrlhdr->value.choice.RICcontrolHeader;
+    ctrlHdr->buf = (uint8_t *)calloc(1, ricControlHdrSize);
+    if (!ctrlHdr->buf) {
+        fprintf(stderr, "alloc RICcontrolHeader buf failed\n");
+        free(ies_ctrlhdr);
         ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
         return -1;
     }
+    memcpy(ctrlHdr->buf, ricControlHdr, ricControlHdrSize);
+    ctrlHdr->size = ricControlHdrSize;
+    ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_ctrlhdr);
 
-    memcpy(controlHdr->buf, ricControlHdr, ricControlHdrSize);
-    controlHdr->size = ricControlHdrSize;
-    ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, controlReqHdr);
-
-    //Ric Control Message
-    RICcontrolRequest_IEs_t *controlReqMsg = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
-    if(!controlReqMsg) {
-        fprintf(stderr, "alloc RICcontrolRequest_IEs_t failed\n");
+    /* ============================================================
+     * IE 5: id-RICcontrolMessage (23) — MANDATORY
+     * ============================================================ */
+    RICcontrolRequest_IEs_t *ies_ctrlmsg = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
+    if (!ies_ctrlmsg) {
+        fprintf(stderr, "alloc RICcontrolMessage IE failed\n");
         ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
         return -1;
     }
-    controlReqMsg->criticality = Criticality_reject;
-    controlReqMsg->id = ProtocolIE_ID_id_RICcontrolMessage;
-    controlReqMsg->value.present = RICcontrolRequest_IEs__value_PR_RICcontrolMessage;
-    RICcontrolMessage_t *controlMsg = &controlReqMsg->value.choice.RICcontrolMessage;
-    controlMsg->buf = (uint8_t *)calloc(1, ricControlMsgSize);
-    if(!controlMsg->buf) {
-        fprintf(stderr, "alloc RICcontrolMessage_t buf failed\n");
+    ies_ctrlmsg->criticality = Criticality_reject;
+    ies_ctrlmsg->id = ProtocolIE_ID_id_RICcontrolMessage;
+    ies_ctrlmsg->value.present = RICcontrolRequest_IEs__value_PR_RICcontrolMessage;
+    RICcontrolMessage_t *ctrlMsg = &ies_ctrlmsg->value.choice.RICcontrolMessage;
+    ctrlMsg->buf = (uint8_t *)calloc(1, ricControlMsgSize);
+    if (!ctrlMsg->buf) {
+        fprintf(stderr, "alloc RICcontrolMessage buf failed\n");
+        free(ies_ctrlmsg);
         ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
         return -1;
     }
+    memcpy(ctrlMsg->buf, ricControlMsg, ricControlMsgSize);
+    ctrlMsg->size = ricControlMsgSize;
+    ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_ctrlmsg);
 
-    memcpy(controlMsg->buf, ricControlMsg, ricControlMsgSize);
-    controlMsg->size = ricControlMsgSize;
-    ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, controlReqMsg);
-
-    fprintf(stderr, "showing xer of asn_DEF_E2AP_PDU data\n");
-    xer_fprint(stderr, &asn_DEF_E2AP_PDU, init);
-    fprintf(stderr, "\n");
-    fprintf(stderr, "After xer of asn_DEF_E2AP_PDU data\n");
+    /* ============================================================
+     * IE 6: id-RICcontrolAckRequest (21) — OPTIONAL
+     * ============================================================ */
+    if (ricControlAckRequest >= 0) {
+        RICcontrolRequest_IEs_t *ies_ackreq = (RICcontrolRequest_IEs_t *)calloc(1, sizeof(RICcontrolRequest_IEs_t));
+        if (!ies_ackreq) {
+            fprintf(stderr, "alloc RICcontrolAckRequest IE failed\n");
+            ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, init);
+            return -1;
+        }
+        ies_ackreq->criticality = Criticality_reject;
+        ies_ackreq->id = ProtocolIE_ID_id_RICcontrolAckRequest;
+        ies_ackreq->value.present = RICcontrolRequest_IEs__value_PR_RICcontrolAckRequest;
+        ies_ackreq->value.choice.RICcontrolAckRequest = ricControlAckRequest;
+        ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_ackreq);
+    }
 
     return encode_E2AP_PDU(init, buffer, buf_size);
 }

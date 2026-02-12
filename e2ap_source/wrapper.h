@@ -135,7 +135,7 @@ RICindicationMsg* e2ap_decode_ric_indication_m();
 void e2ap_free_decoded_ric_indication_message(RICindicationMsg* msg);
 
 /* RICcontrol */
-ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, long ricRequestorID, long ricRequestSequenceNumber, long ranFunctionID, void *ricControlHdr, size_t ricControlHdrSize, void *ricControlMsg, size_t ricControlMsgSize);
+ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, long ricRequestorID, long ricRequestSequenceNumber, long ranFunctionID, void *ricCallProcessID, size_t ricCallProcessIDSize, void *ricControlHdr, size_t ricControlHdrSize, void *ricControlMsg, size_t ricControlMsgSize, long ricControlAckRequest);
 
 RICControlAcknowledge* e2ap_decode_ric_control_acknowledge_message(void *buffer, size_t buf_size);
 void e2ap_free_decoded_ric_control_ack(RICControlAcknowledge* msg);
