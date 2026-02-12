@@ -1108,5 +1108,10 @@ ssize_t e2ap_encode_ric_control_request_message(
         ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_ackreq);
     }
 
+    fprintf(stderr, "showing xer of asn_DEF_E2AP_PDU data\n");
+    xer_fprint(stderr, &asn_DEF_E2AP_PDU, init);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "After xer of asn_DEF_E2AP_PDU data\n");
+
     return encode_E2AP_PDU(init, buffer, buf_size);
 }
