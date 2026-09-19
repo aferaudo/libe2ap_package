@@ -633,6 +633,11 @@ RICindicationMsg* e2ap_decode_ric_indication_message(void *buffer, size_t buf_si
                     msg->callProcessIDSize = callProcessIDSize;
                 }
             }
+            /* The decoded PDU is dead once msg is built: indicationHeader,
+             * indicationMessage and callProcessID are calloc+memcpy copies.
+             * Every error path above frees it; this success path did not,
+             * leaking the PDU and its children on every indication. */
+            ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, pdu);
             return msg;
         }
     }
