@@ -633,6 +633,7 @@ RICindicationMsg* e2ap_decode_ric_indication_message(void *buffer, size_t buf_si
                     msg->callProcessIDSize = callProcessIDSize;
                 }
             }
+            ASN_STRUCT_FREE(asn_DEF_E2AP_PDU, pdu);
             return msg;
         }
     }
