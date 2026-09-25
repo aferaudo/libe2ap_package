@@ -957,7 +957,6 @@ void e2ap_free_decoded_ric_control_failure(RICControlFailure* msg) {
 /* RICControl */
 ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, long ricRequestorID, long ricRequestSequenceNumber, long ranFunctionID, void *callProcessIDBuffer, size_t callProcessIDSize, void *controlHeaderBuffer, size_t controlHeaderSize, void *controlMessageBuffer, size_t controlMessageSize, long controlAckRequest)
 {
-    printf("new version__\n");
     E2AP_PDU_t *init = (E2AP_PDU_t *)calloc(1, sizeof(E2AP_PDU_t));
     if (!init)
     {
@@ -1119,11 +1118,6 @@ ssize_t e2ap_encode_ric_control_request_message(void *buffer, size_t buf_size, l
         *ricctlackreq_ie = controlAckRequest;
         ASN_SEQUENCE_ADD(&control_request->protocolIEs.list, ies_ctlackreq);
     }
-
-    fprintf(stderr, "showing xer of asn_DEF_E2AP_PDU data\n");
-    xer_fprint(stderr, &asn_DEF_E2AP_PDU, init);
-    fprintf(stderr, "\n");
-    fprintf(stderr, "After xer of asn_DEF_E2AP_PDU data\n");
 
     return encode_E2AP_PDU(init, buffer, buf_size);
 }
